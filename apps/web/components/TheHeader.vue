@@ -16,7 +16,7 @@ import {
   SfIconSearch,
 } from "@storefront-ui/vue";
 import { onClickOutside } from "@vueuse/core";
-import { useRouter, useRoute } from "#vue-router";
+import { useRouter, useRoute } from "vue-router";
 import { AlgoliaHitType } from "@/types/algolia";
 
 defineProps<{ filled?: boolean }>();
@@ -96,14 +96,15 @@ await loadCategoryList({ filter: { parent: true } });
 const searchHits = computed<AlgoliaHitType[]>(() => result.value?.hits || []);
 
 const selectHit = (hit: AlgoliaHitType) => {
+  if (!hit?.name && !inputValue.value) return;
   router.push(`/search?search=${hit?.name || inputValue.value}`);
   showSearchClerkRef.value = false;
-  inputValue.value = hit.name;
+  inputValue.value = hit?.name || inputValue.value;
 };
 
 const cartCounter = useCookie<number>("cart-counter");
 
-const inputValue = ref(route.query?.search || "");
+const inputValue = ref(route.query.search || "");
 
 const search = async (event: Event) => {
   const query = (event.target as HTMLInputElement).value;
@@ -143,6 +144,12 @@ const highlightNext = () => {
   }
   setInputValue(searchHits.value[highlightedIndex.value]?.name);
 };
+
+watch(
+  () => route,
+  () => (inputValue.value = route.query.search || ""),
+  { deep: true, immediate: true }
+);
 </script>
 
 <template>
@@ -296,7 +303,6 @@ const highlightNext = () => {
             placeholder="Search"
             wrapper-class="flex-1 h-10 pr-0"
             size="base"
-            @input="search"
             @keydown.up.prevent="highlightPrevious"
             @keydown.down.prevent="highlightNext"
             @keydown.enter.prevent="selectHit(searchHits[highlightedIndex])"
