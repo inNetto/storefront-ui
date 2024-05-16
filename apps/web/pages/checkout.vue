@@ -12,23 +12,25 @@ import {
   SfLink,
 } from "@storefront-ui/vue";
 import { useDeliveryMethod } from "~/composables/useDeliveryMethod";
-import { AddressEnum } from "~/graphql";
+import { AddressEnum, PaymentProvider } from "~/graphql";
 
 const NuxtLink = resolveComponent("NuxtLink");
 const { isOpen, open, close } = useDisclosure();
 const { cart, loadCart } = useCart();
+
 const {
   loadBillingAddresses,
   loadShippingAddresses,
   mailingAddresses,
   billingAddresses,
 } = useAddresses();
+
 const { loadCountryList } = useCountry();
 const { updatePartner } = usePartner();
 const { loadDeliveryMethods, deliveryMethods } = useDeliveryMethod();
 const {
   loadPaymentMethods,
-  paymentMethods,
+  paymentProviders,
   loading: paymentLoading,
 } = usePayment();
 
@@ -39,7 +41,7 @@ await loadDeliveryMethods();
 await loadPaymentMethods();
 await loadCountryList();
 
-const savedMailingAddress = computed(() => mailingAddresses.value[0] || null);
+const savedMailingAddress = computed(() => shippingAddresses.value[0] || null);
 const savedBillingAddress = computed(() => billingAddresses.value[0] || null);
 
 const partnerData = computed(() => {
@@ -75,7 +77,7 @@ const updatePartnerData = async ({
 };
 
 onMounted(() => {
-  if (paymentMethods.value.length) {
+  if (paymentProviders.value.length) {
     showPaymentModal.value = true;
   }
 });
@@ -85,7 +87,9 @@ onBeforeUnmount(() => {
 });
 
 const radioModel = ref("1");
-const selectedProvider = ref(1);
+const selectedProvider = ref<PaymentProvider | null>(
+  paymentProviders.value?.[0] || null
+);
 </script>
 
 <template>
@@ -241,9 +245,9 @@ const selectedProvider = ref(1);
             </div>
           </div>
           <UiDivider class="w-screen md:w-auto -mx-4 md:mx-0" />
-          <CheckoutPaymentMethod
-            :active-payment="selectedProvider"
-            :payment-methods="paymentMethods"
+          <ProviderListOptions
+            :activeProvider="selectedProvider || paymentProviders[0]"
+            :payment-providers="paymentProviders"
             @update:active-payment="selectedProvider = $event"
           />
           <UiDivider class="w-screen md:w-auto -mx-4 md:mx-0 mb-10" />
@@ -277,9 +281,11 @@ const selectedProvider = ref(1);
               </template>
             </i18n-t>
           </p>
-          <LazyCheckoutAdyenPaymentProvider
-            v-if="showPaymentModal && paymentMethods[0]"
-            :provider="paymentMethods[0]"
+
+          <component
+            v-if="showPaymentModal && !!selectedProvider?.code"
+            :is="getPaymentProviderComponentName(selectedProvider.code)"
+            :provider="selectedProvider"
             :cart="cart"
             @is-payment-ready="($event) => (isPaymentReady = $event)"
             @provider-payment-handler="

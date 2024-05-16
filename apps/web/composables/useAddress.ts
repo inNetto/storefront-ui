@@ -28,8 +28,10 @@ export const useAddresses = () => {
   const billingAddresses = useState<Partner[]>("billing-addresses", () => []);
   const mailingAddresses = useState<Partner[]>("mailing-addresses", () => []);
 
+
   const loadBillingAddresses = async () => {
     loading.value = true;
+
 
     const { data, error } = await $sdk().odoo.query<
       QueryAddressesArgs,

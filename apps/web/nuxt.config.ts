@@ -1,5 +1,15 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
+  extends: [
+    "./domains/auth",
+    "./domains/cart-odoo",
+    "./domains/category",
+    "./domains/checkout",
+    "./domains/core",
+    "./domains/my-account",
+    "./domains/payment",
+    "./domains/search-algolia",
+  ],
   app: {
     head: {
       viewport: "minimum-scale=1, initial-scale=1, width=device-width",
@@ -12,21 +22,14 @@ export default defineNuxtConfig({
   delayHydration: {
     mode: "init",
   },
-  components: {
-    dirs: [
-      {
-        isAsync: true,
-        path: "components",
-      },
-    ],
-  },
   modules: [
+    "nuxt-icon",
+    "@nuxtjs/device",
     "nuxt-lazy-hydrate",
     "@nuxtjs/critters",
     "@nuxtjs/tailwindcss",
     "@nuxt/image",
     "nuxt-delay-hydration",
-    "nuxt-cron",
     [
       "@nuxtjs/google-fonts",
       {
@@ -53,16 +56,18 @@ export default defineNuxtConfig({
     ],
     // '@storyblok/nuxt',
     "nuxt-lodash",
-    [
-      "@nuxtjs/algolia",
-      {
-        apiKey: process.env.NUXT_ALGOLIA_API_KEY,
-        applicationId: process.env.NUXT_ALGOLIA_APPLICATION_ID,
-        instantSearch: {
-          theme: "algolia",
-        },
-      },
-    ],
+    // [
+    //   "@nuxtjs/algolia",
+    //   {
+    //     apiKey: process.env.NUXT_ALGOLIA_API_KEY,
+    //     applicationId: process.env.NUXT_ALGOLIA_APPLICATION_ID,
+    //     instantSearch: {
+    //       theme: "algolia",
+    //     },
+    //   },
+    // ],
+    "@nuxtjs/seo",
+    "@nuxt/scripts",
   ],
   // storyblok: {
   //   accessToken: process.env.NUXT_STORYBLOK_TOKEN,
@@ -87,7 +92,6 @@ export default defineNuxtConfig({
       xs: 376,
     },
   },
-  cron: {},
   build: {
     transpile: [
       "tslib",
@@ -108,10 +112,14 @@ export default defineNuxtConfig({
     public: {
       odooBaseImageUrl: "",
       odooBaseUrl: "",
+      alogliaEnabled: process.env.NUXT_ALGOLIA_ENABLED,
     },
   },
   routeRules: {
-    "/": { swr: true },
+    "/": { swr: 3600 },
+    "/category/*": { swr: 3600 },
+    "/product/*": { swr: 3600 },
+
     "/_ipx/**": {
       headers: { "cache-control": "public, max-age=31536000, immutable" },
     },
@@ -141,5 +149,11 @@ export default defineNuxtConfig({
     optimizeDeps: {
       include: ["lodash-es"],
     },
+  },
+  site: {
+    url: "https://vsfsdk.labs.odoogap.com/",
+    name: "ERPGAP VSF",
+    description: "Welcome to an awesome ecommerce site!",
+    defaultLocale: "en",
   },
 });
