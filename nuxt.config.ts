@@ -40,6 +40,7 @@ export default defineNuxtConfig({
     "nuxt-icon",
     "nuxt-delay-hydration",
     "nuxt-typed-router",
+    "nuxt-gtag",
   ],
   runtimeConfig: {
     shouldByPassCacheQueryNames: [
@@ -144,6 +145,11 @@ export default defineNuxtConfig({
     name: "ERPGAP VSF",
     description: "Welcome to an awesome ecommerce site!",
     defaultLocale: "en",
+  },
+  gtag: {
+    config: {
+      page_title: "My Custom Page Title",
+    },
   },
   tailwindcss: {
     viewer: false,
