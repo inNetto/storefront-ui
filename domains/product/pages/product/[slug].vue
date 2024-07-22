@@ -76,12 +76,28 @@ const productsInCart = computed(() => {
     )?.quantity || 0
   );
 });
-
+const { gtag } = useGtag();
 const handleCartAdd = async () => {
   let id = productVariant?.value.id;
   if (!productVariant.value.combinationInfoVariant) {
     id = Number(productVariant?.value.firstVariant?.id);
   }
+
+  gtag("event", "add_to_cart", {
+    currency: productTemplate.value.combinationInfo.currency.name,
+    value: cart.value.order?.amountTotal,
+    items: [
+      {
+        item_name: cart.value.order?.name,
+        coupon: cart.value.order?.coupons,
+        discount: 2.22,
+        item_category: "Apparel",
+        price: 10.01,
+        quantity: 3,
+      },
+    ],
+  });
+
   await cartAdd(id, quantitySelectorValue.value);
 };
 
